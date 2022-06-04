@@ -17,12 +17,13 @@ def index():
   if request.method == 'POST':
     take_content = request.form.get('content')
     new_task = Todo_Post(content=take_content)
-
+    print(new_task.id, new_task.content, new_task.date_created)
     try:
       db.session.add(new_task)
       db.session.commit()
       return redirect('/')
     except:
+       print(db)
        return "フォームの送信中に問題が発生しました"
 
   else:
@@ -51,25 +52,6 @@ def delete(id):
   db.session.delete(task)
   db.session.commit()
   return redirect('/')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
