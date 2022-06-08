@@ -1,3 +1,4 @@
+from asyncio import tasks
 from flask import Flask, redirect, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -17,28 +18,26 @@ def index():
   if request.method == 'POST':
     take_content = request.form.get('content')
     new_task = Todo_Post(content=take_content)
-    print(new_task.id, new_task.content, new_task.date_created)
     try:
       db.session.add(new_task)
       db.session.commit()
-      return redirect('/')
+      task = Todo_Post.query.order_by(Todo_Post.date_created).all()
+      return render_template('index.html', tasks=task, length=len(task))
     except:
-       print(db)
        return "フォームの送信中に問題が発生しました"
 
   else:
-    # tasks = Todo_Post.query.order_by(Todo_Post.date_created).all()
-    return render_template('index.html')
+    tasks = Todo_Post.query.order_by(Todo_Post.date_created).all()
+    return render_template('index.html', tasks=tasks)
 
 
-@app.route('/edit/<int:id>')
+@app.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit(id):
   task = Todo_Post.query.get(id)
   if request.method == 'GET':
-    return render_template('index.html', task=task)
+    return render_template('edit.html', task=task)
   else:
-    task = request.form.get('content')
-
+    task.content = request.form.get('content')
     try:
        db.session.commit()
        return redirect('/')
@@ -53,7 +52,12 @@ def delete(id):
   db.session.commit()
   return redirect('/')
 
-
+if __name__ == "__main__":
+    # モデルからテーブルを作成(データベースファイルを最初に作るときだけ実行)
+    db.create_all()
+    
+    # アプリを起動(データベースファイルを最初に作るときはコメントアウトして実行しない)
+    app.run(host="127.0.0.1", port=5000)
 
 
 
